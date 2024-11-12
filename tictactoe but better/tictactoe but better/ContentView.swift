@@ -4,27 +4,26 @@
 //
 //  Created by Lim Zhe Hsien on 12/11/24.
 //
-
-import SwiftUI
+ import SwiftUI
 
 struct ContentView: View {
-    @State private var board: [[String]] = Array(repeating: Array(repeating: "", count: 3), count: 3)
+    @State private var board: [[String]] = Array(repeating: Array(repeating: "", count: 5), count: 5)
     @State private var currentPlayer: String = "X"
     @State private var gameOver: Bool = false
     @State private var winner: String? = nil
 
     var body: some View {
         VStack {
-            Text("Tic-Tac-Toe")
+            Text("5x5 Tic-Tac-Toe")
                 .font(.largeTitle)
                 .padding()
 
             Spacer()
 
-            VStack(spacing: 10) {
-                ForEach(0..<3, id: \.self) { row in
-                    HStack(spacing: 10) {
-                        ForEach(0..<3, id: \.self) { column in
+            VStack(spacing: 5) {
+                ForEach(0..<5, id: \.self) { row in
+                    HStack(spacing: 5) {
+                        ForEach(0..<5, id: \.self) { column in
                             CellView(symbol: $board[row][column])
                                 .onTapGesture {
                                     makeMove(row: row, column: column)
@@ -65,22 +64,43 @@ struct ContentView: View {
     }
 
     private func checkWin(for player: String) -> Bool {
-        // Check rows and columns
-        for i in 0..<3 {
-            if board[i][0] == player && board[i][1] == player && board[i][2] == player {
-                return true
-            }
-            if board[0][i] == player && board[1][i] == player && board[2][i] == player {
-                return true
+        // Check rows, columns, and diagonals for 5 in a row
+        let winCondition = 5
+
+        // Check rows
+        for row in 0..<5 {
+            for start in 0...(5 - winCondition) {
+                if board[row][start...(start + winCondition - 1)].allSatisfy({ $0 == player }) {
+                    return true
+                }
             }
         }
 
-        // Check diagonals
-        if board[0][0] == player && board[1][1] == player && board[2][2] == player {
-            return true
+        // Check columns
+        for column in 0..<5 {
+            for start in 0...(5 - winCondition) {
+                if (start..<(start + winCondition)).allSatisfy({ board[$0][column] == player }) {
+                    return true
+                }
+            }
         }
-        if board[0][2] == player && board[1][1] == player && board[2][0] == player {
-            return true
+
+        // Check diagonals (top-left to bottom-right)
+        for row in 0...(5 - winCondition) {
+            for column in 0...(5 - winCondition) {
+                if (0..<winCondition).allSatisfy({ board[row + $0][column + $0] == player }) {
+                    return true
+                }
+            }
+        }
+
+        // Check diagonals (bottom-left to top-right)
+        for row in (winCondition - 1)..<5 {
+            for column in 0...(5 - winCondition) {
+                if (0..<winCondition).allSatisfy({ board[row - $0][column + $0] == player }) {
+                    return true
+                }
+            }
         }
 
         return false
@@ -104,7 +124,7 @@ struct ContentView: View {
     }
 
     private func resetGame() {
-        board = Array(repeating: Array(repeating: "", count: 3), count: 3)
+        board = Array(repeating: Array(repeating: "", count: 5), count: 5)
         currentPlayer = "X"
         gameOver = false
         winner = nil
@@ -118,16 +138,18 @@ struct CellView: View {
         ZStack {
             Rectangle()
                 .fill(Color.blue)
-                .frame(width: 100, height: 100)
-                .cornerRadius(10)
+                .frame(width: 60, height: 60)
+                .cornerRadius(5)
             
             Text(symbol)
-                .font(.system(size: 40))
+                .font(.system(size: 30))
                 .foregroundColor(.white)
         }
     }
 }
 
-#Preview{
-    ContentView()
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+    }
 }
